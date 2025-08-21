@@ -97,10 +97,10 @@ let ctx : MissionContext =
                   70
               }
           )
-      opCountDistribution =
+      byteCountDistribution =
           Some(
               __SOURCE_DIRECTORY__
-              + "/../FSLibrary/csv-type-samples/sample-loadgen-op-count-distribution.csv"
+              + "/../FSLibrary/csv-type-samples/sample-loadgen-byte-count-distribution.csv"
           )
       wasmBytesDistribution = []
       dataEntriesDistribution = []

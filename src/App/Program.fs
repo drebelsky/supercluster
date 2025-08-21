@@ -74,7 +74,7 @@ type MissionOptions
         tier1Keys: string option,
         maxConnections: int option,
         fullyConnectTier1: bool,
-        opCountDistribution: string option,
+        byteCountDistribution: string option,
         wasmBytesValues: seq<int>,
         wasmBytesWeights: seq<int>,
         dataEntriesValues: seq<int>,
@@ -296,10 +296,10 @@ type MissionOptions
              Default = false)>]
     member self.FullyConnectTier1 = fullyConnectTier1
 
-    [<Option("op-count-distribution",
-             HelpText = "Operation count distribution for SimulatePubnet. See csv-type-samples/sample-loadgen-op-count-distribution.csv for the format",
+    [<Option("byte-count-distribution",
+             HelpText = "Byte count distribution for SimulatePubnet. See csv-type-samples/sample-loadgen-byte-count-distribution.csv for the format",
              Required = false)>]
-    member self.OpCountDistribution = opCountDistribution
+    member self.ByteCountDistribution = byteCountDistribution
 
     [<Option("wasm-bytes",
              HelpText = "A space-separated list of sizes of wasm blobs for SOROBAN_UPLOAD and MIX_CLASSIC_SOROBAN loadgen modes (See LOADGEN_WASM_BYTES_FOR_TESTING)",
@@ -597,7 +597,7 @@ let main argv =
                   tier1Keys = None
                   maxConnections = None
                   fullyConnectTier1 = false
-                  opCountDistribution = None
+                  byteCountDistribution = None
                   wasmBytesDistribution = []
                   dataEntriesDistribution = []
                   totalKiloBytesDistribution = []
@@ -730,7 +730,7 @@ let main argv =
                                tier1Keys = mission.Tier1Keys
                                maxConnections = mission.MaxConnections
                                fullyConnectTier1 = mission.FullyConnectTier1
-                               opCountDistribution = mission.OpCountDistribution
+                               byteCountDistribution = mission.ByteCountDistribution
                                wasmBytesDistribution =
                                    List.zip (List.ofSeq mission.WasmBytesValues) (List.ofSeq mission.WasmBytesWeights)
                                dataEntriesDistribution =
