@@ -97,11 +97,7 @@ let ctx : MissionContext =
                   70
               }
           )
-      byteCountDistribution =
-          Some(
-              __SOURCE_DIRECTORY__
-              + "/../FSLibrary/csv-type-samples/sample-loadgen-byte-count-distribution.csv"
-          )
+      byteCountDistribution = []
       wasmBytesDistribution = []
       dataEntriesDistribution = []
       totalKiloBytesDistribution = []
