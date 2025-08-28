@@ -303,7 +303,7 @@ type MissionOptions
     member self.ByteCountValues = byteCountValues
 
     [<Option("byte-count-weights",
-             HelpText = "A space-separated list indicating how often to select a certain size when generating classical transactions for MIX_CLASSIC_SOROBAN loadgen mode (See LOADGEN_BYTE_COUNT_DISTIRBUTION_FOR_TESTING)",
+             HelpText = "A space-separated list indicating how often to select a certain size when generating classical transactions for MIX_CLASSIC_SOROBAN loadgen mode (See LOADGEN_BYTE_COUNT_DISTRIBUTION_FOR_TESTING)",
              Required = false)>]
     member self.ByteCountWeights = byteCountWeights
 
