@@ -18,6 +18,7 @@ open StellarCoreSet
 open StellarKubeSpecs
 open StellarNamespaceContent
 open System
+open System.Diagnostics
 
 let ExpandHomeDirTilde (s: string) : string =
     if s.StartsWith("~/") then
@@ -27,14 +28,39 @@ let ExpandHomeDirTilde (s: string) : string =
     else
         s
 
+type ProcResult =
+    | RanSuccess
+    | RanWithError of int
+    | DidNotRun
+
 // Loads a config file and builds a Kubernetes client object connected to the
 // cluster described by it. Takes an optional explicit namespace and returns a
 // resolved namespace, which will be taken from the config file if no explicit
 // namespace is provided.
 let ConnectToCluster (cfgFile: string) (nsOpt: string option) : (Kubernetes * string) =
+
     let cfgFileExpanded = ExpandHomeDirTilde cfgFile
+
+
+    let runKubectl (args: List<string>) : ProcResult =
+        let args = [ "--kubeconfig"; cfgFileExpanded ] @ args
+        LogInfo "Attempting to run `kubectl %s`" (System.String.Join(" ", args))
+
+        let startInfo = new ProcessStartInfo(FileName = "kubectl", UseShellExecute = false)
+
+        args |> List.iter startInfo.ArgumentList.Add
+
+        using (new Process(StartInfo = startInfo)) (fun proc ->
+            if proc.Start() then
+                proc.WaitForExit()
+                if proc.ExitCode = 0 then RanSuccess else RanWithError proc.ExitCode
+            else
+                DidNotRun)
+
+
     let cfgFileInfo = IO.FileInfo(cfgFileExpanded)
-    let kCfg = k8s.KubernetesClientConfiguration.LoadKubeConfig(cfgFileInfo)
+    let cfgInit = k8s.KubernetesClientConfiguration.LoadKubeConfig(cfgFileInfo)
+
     LogInfo "Connecting to cluster using kubeconfig %s" cfgFileExpanded
 
     let ns =
@@ -43,7 +69,8 @@ let ConnectToCluster (cfgFile: string) (nsOpt: string option) : (Kubernetes * st
             LogInfo "Using explicit namespace '%s'" ns
             ns
         | None ->
-            (let ctxOpt = Seq.tryFind (fun (c: Context) -> c.Name = kCfg.CurrentContext) kCfg.Contexts
+            (let ctxOpt =
+                Seq.tryFind (fun (c: Context) -> c.Name = cfgInit.CurrentContext) cfgInit.Contexts
 
              match ctxOpt with
              | Some c ->
@@ -52,6 +79,89 @@ let ConnectToCluster (cfgFile: string) (nsOpt: string option) : (Kubernetes * st
              | None ->
                  LogInfo "Using default namespace 'stellar-supercluster'"
                  "stellar-supercluster")
+
+    let ctxs =
+        cfgInit.Contexts
+        |> Seq.where (fun (c: Context) -> c.ContextDetails.Namespace = ns)
+
+
+    // Try updating the config if we are using OIDC authentication
+    // We reset the id-token using kubectl, and then, try refreshing since the builtin refresh flow is a
+    // little broken
+    let newConfig =
+        Some()
+        |> Option.bind (fun _ ->
+            match Seq.length ctxs with
+            | 1 ->
+                let username = (Seq.exactlyOne ctxs).ContextDetails.User
+                LogInfo "User is '%s'" username
+                let users = cfgInit.Users |> Seq.where (fun (u: User) -> u.Name = username)
+                Some(username, users)
+            | n ->
+                LogWarn "Could not determine user for ns '%s' (%d matching contexts found)" ns n
+                None)
+        |> Option.bind (fun state ->
+            let username, users = state
+
+            match Seq.length users with
+            | 1 -> Some(username, users)
+            | n ->
+                LogWarn "Could not determine user block for '%s' (%d candidates)" username n
+                None)
+        |> Option.bind (fun state ->
+            let username, users = state
+            let user = Seq.exactlyOne users
+            let provider = user.UserCredentials.AuthProvider
+            let authCfg = provider.Config
+
+            if provider.Name = "oidc" && authCfg.ContainsKey "refresh-token" then
+                LogInfo "User has oidc auth with refresh-token"
+
+                let initToken =
+                    if authCfg.ContainsKey "id-token" then Some(authCfg.Item "id-token") else None
+
+                match runKubectl [ "config"; "set-credentials"; username; "--auth-provider-arg"; "id-token=" ] with
+                | DidNotRun ->
+                    LogWarn "Failed to run kubectl"
+                    None
+                | RanWithError code ->
+                    LogWarn "Ran, but got error code %d" code
+                    None
+                | RanSuccess ->
+                    LogInfo "Reset oidc id-token"
+                    Some(username, initToken)
+            else
+                None)
+        |> Option.bind (fun state ->
+            let username, initToken = state
+
+            match runKubectl [ "auth"; "whoami" ] with
+            | RanSuccess ->
+                LogInfo "Successfully refreshed oidc token"
+                Some(k8s.KubernetesClientConfiguration.LoadKubeConfig cfgFileInfo)
+            | _ ->
+                match initToken with
+                | Some init ->
+                    LogWarn "Failed to refresh oidc token, attempting to restore id-token"
+
+                    match
+                        runKubectl
+                            [ "config"
+                              "set-credentials"
+                              username
+                              "--auth-provider-arg"
+                              "id-token=" + init ]
+                    with
+                    | RanSuccess -> LogInfo "Successfuly restored old id-token"
+                    | _ -> LogWarn "Failed to restore old id-token: value '%s'" init
+                | None -> LogWarn "Failed to refresh oidc token, no initial id-token to restore"
+
+                failwith "Could not refresh oidc token")
+
+    let kCfg =
+        match newConfig with
+        | None -> cfgInit
+        | Some cfg -> cfg
 
     let clientConfig = KubernetesClientConfiguration.BuildConfigFromConfigObject(kCfg)
     // Disable HTTP2 to avoid intermittent issues with the cluster
@@ -113,7 +223,10 @@ type Kubernetes with
     // Ingress for a given NetworkCfg, then waits for it to be ready.
     member self.MakeFormation(nCfg: NetworkCfg) : StellarFormation =
         let nsStr = nCfg.NamespaceProperty
-        let namespaceContent = NamespaceContent(self, nCfg.missionContext.apiRateLimit, nsStr)
+
+        let namespaceContent =
+            NamespaceContent(self, nCfg.missionContext.apiRateLimit, nsStr)
+
         let rps = nCfg.missionContext.apiRateLimit
 
         try
@@ -165,27 +278,23 @@ type Kubernetes with
             if nCfg.missionContext.exportToPrometheus then
                 LogInfo "Core metrics will be exported to prometheus"
 
-                nCfg.MapAllPeers
-                    (fun (cs: CoreSet) (i: int) ->
-                        let podName = nCfg.PodName cs i
-                        let shortName = nCfg.PeerShortName cs i
-                        ApiRateLimit.sleepUntilNextRateLimitedApiCallTime (rps)
+                nCfg.MapAllPeers(fun (cs: CoreSet) (i: int) ->
+                    let podName = nCfg.PodName cs i
+                    let shortName = nCfg.PeerShortName cs i
+                    ApiRateLimit.sleepUntilNextRateLimitedApiCallTime (rps)
 
-                        let pod : V1Pod =
-                            self.ReadNamespacedPod(
-                                name = podName.StringName,
-                                namespaceParameter = nCfg.NamespaceProperty
-                            )
+                    let pod: V1Pod =
+                        self.ReadNamespacedPod(name = podName.StringName, namespaceParameter = nCfg.NamespaceProperty)
 
-                        LogInfo "Setting pod %s label short_name = %s" podName.StringName shortName.StringName
-                        pod.Metadata.Labels.Add("short_name", shortName.StringName) |> ignore
-                        ApiRateLimit.sleepUntilNextRateLimitedApiCallTime (rps)
+                    LogInfo "Setting pod %s label short_name = %s" podName.StringName shortName.StringName
+                    pod.Metadata.Labels.Add("short_name", shortName.StringName) |> ignore
+                    ApiRateLimit.sleepUntilNextRateLimitedApiCallTime (rps)
 
-                        self.ReplaceNamespacedPod(
-                            body = pod,
-                            name = podName.StringName,
-                            namespaceParameter = nCfg.NamespaceProperty
-                        ))
+                    self.ReplaceNamespacedPod(
+                        body = pod,
+                        name = podName.StringName,
+                        namespaceParameter = nCfg.NamespaceProperty
+                    ))
                 |> ignore
 
 
@@ -239,7 +348,9 @@ type MissionContext with
             finally
                 formation.DumpJobData()
         with x ->
-            (if self.keepData then formation.KeepData()
+            (if self.keepData then
+                 formation.KeepData()
+
              reraise ())
 
     member self.ExecuteWithOptionalConsistencyCheck
@@ -254,11 +365,15 @@ type MissionContext with
             try
                 formation.WaitUntilReady()
                 run formation
-                if checkConsistency then formation.CheckNoErrorsAndPairwiseConsistency()
+
+                if checkConsistency then
+                    formation.CheckNoErrorsAndPairwiseConsistency()
             finally
                 formation.DumpData()
         with x ->
-            (if self.keepData then formation.KeepData()
+            (if self.keepData then
+                 formation.KeepData()
+
              reraise ())
 
     member self.Execute
