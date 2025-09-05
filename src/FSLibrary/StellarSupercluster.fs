@@ -69,8 +69,7 @@ let ConnectToCluster (cfgFile: string) (nsOpt: string option) : (Kubernetes * st
             LogInfo "Using explicit namespace '%s'" ns
             ns
         | None ->
-            (let ctxOpt =
-                Seq.tryFind (fun (c: Context) -> c.Name = cfgInit.CurrentContext) cfgInit.Contexts
+            (let ctxOpt = Seq.tryFind (fun (c: Context) -> c.Name = kCfg.CurrentContext) kCfg.Contexts
 
              match ctxOpt with
              | Some c ->
@@ -223,10 +222,7 @@ type Kubernetes with
     // Ingress for a given NetworkCfg, then waits for it to be ready.
     member self.MakeFormation(nCfg: NetworkCfg) : StellarFormation =
         let nsStr = nCfg.NamespaceProperty
-
-        let namespaceContent =
-            NamespaceContent(self, nCfg.missionContext.apiRateLimit, nsStr)
-
+        let namespaceContent = NamespaceContent(self, nCfg.missionContext.apiRateLimit, nsStr)
         let rps = nCfg.missionContext.apiRateLimit
 
         try
@@ -278,23 +274,27 @@ type Kubernetes with
             if nCfg.missionContext.exportToPrometheus then
                 LogInfo "Core metrics will be exported to prometheus"
 
-                nCfg.MapAllPeers(fun (cs: CoreSet) (i: int) ->
-                    let podName = nCfg.PodName cs i
-                    let shortName = nCfg.PeerShortName cs i
-                    ApiRateLimit.sleepUntilNextRateLimitedApiCallTime (rps)
+                nCfg.MapAllPeers
+                    (fun (cs: CoreSet) (i: int) ->
+                        let podName = nCfg.PodName cs i
+                        let shortName = nCfg.PeerShortName cs i
+                        ApiRateLimit.sleepUntilNextRateLimitedApiCallTime (rps)
 
-                    let pod: V1Pod =
-                        self.ReadNamespacedPod(name = podName.StringName, namespaceParameter = nCfg.NamespaceProperty)
+                        let pod : V1Pod =
+                            self.ReadNamespacedPod(
+                                name = podName.StringName,
+                                namespaceParameter = nCfg.NamespaceProperty
+                            )
 
-                    LogInfo "Setting pod %s label short_name = %s" podName.StringName shortName.StringName
-                    pod.Metadata.Labels.Add("short_name", shortName.StringName) |> ignore
-                    ApiRateLimit.sleepUntilNextRateLimitedApiCallTime (rps)
+                        LogInfo "Setting pod %s label short_name = %s" podName.StringName shortName.StringName
+                        pod.Metadata.Labels.Add("short_name", shortName.StringName) |> ignore
+                        ApiRateLimit.sleepUntilNextRateLimitedApiCallTime (rps)
 
-                    self.ReplaceNamespacedPod(
-                        body = pod,
-                        name = podName.StringName,
-                        namespaceParameter = nCfg.NamespaceProperty
-                    ))
+                        self.ReplaceNamespacedPod(
+                            body = pod,
+                            name = podName.StringName,
+                            namespaceParameter = nCfg.NamespaceProperty
+                        ))
                 |> ignore
 
 
@@ -348,9 +348,7 @@ type MissionContext with
             finally
                 formation.DumpJobData()
         with x ->
-            (if self.keepData then
-                 formation.KeepData()
-
+            (if self.keepData then formation.KeepData()
              reraise ())
 
     member self.ExecuteWithOptionalConsistencyCheck
@@ -365,15 +363,11 @@ type MissionContext with
             try
                 formation.WaitUntilReady()
                 run formation
-
-                if checkConsistency then
-                    formation.CheckNoErrorsAndPairwiseConsistency()
+                if checkConsistency then formation.CheckNoErrorsAndPairwiseConsistency()
             finally
                 formation.DumpData()
         with x ->
-            (if self.keepData then
-                 formation.KeepData()
-
+            (if self.keepData then formation.KeepData()
              reraise ())
 
     member self.Execute
