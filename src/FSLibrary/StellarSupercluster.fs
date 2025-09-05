@@ -68,7 +68,7 @@ let ConnectToCluster (cfgFile: string) (nsOpt: string option) : (Kubernetes * st
             LogInfo "Using explicit namespace '%s'" ns
             ns
         | None ->
-            (let ctxOpt = Seq.tryFind (fun (c: Context) -> c.Name = kCfg.CurrentContext) kCfg.Contexts
+            (let ctxOpt = Seq.tryFind (fun (c: Context) -> c.Name = cfgInit.CurrentContext) cfgInit.Contexts
 
              match ctxOpt with
              | Some c ->
