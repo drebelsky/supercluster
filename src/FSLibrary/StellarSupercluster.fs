@@ -38,7 +38,6 @@ type ProcResult =
 // resolved namespace, which will be taken from the config file if no explicit
 // namespace is provided.
 let ConnectToCluster (cfgFile: string) (nsOpt: string option) : (Kubernetes * string) =
-
     let cfgFileExpanded = ExpandHomeDirTilde cfgFile
 
 
