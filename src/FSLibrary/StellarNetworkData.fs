@@ -577,7 +577,6 @@ let FullPubnetCoreSets (context: MissionContext) (manualclose: bool) (enforceMin
     let pubnetOpts =
         { CoreSetOptions.GetDefault context.image with
               accelerateTime = false
-              historyNodes = Some([])
               emptyDirType = DiskBackedEmptyDir
               // We need to use a synchronized startup delay
               // for networks as large as this, otherwise it loses
