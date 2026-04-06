@@ -108,7 +108,7 @@ let PgResourceRequirements : V1ResourceRequirements =
 
 let HistoryResourceRequirements : V1ResourceRequirements =
     // Nginx needs 0.05 vCPU and 32MB RAM. It's small.
-    makeResourceRequirements 10 32 50 32
+    makeResourceRequirements 500 500 2000 4000
 
 let PrometheusExporterSidecarResourceRequirements : V1ResourceRequirements =
     // The prometheus exporter sidecar needs 0.05 vCPU and 64MB RAM.
@@ -122,7 +122,7 @@ let SimulatePubnetTier1PerfCoreResourceRequirements : V1ResourceRequirements =
     // Tier1 perf simulation is interested in "how fast can we go in practice"
     // which means configuring the nodes like a real operator would: 1-4 vCPU
     // and 128MB-2GB RAM.
-    makeResourceRequirements 500 128 4000 6000
+    makeResourceRequirements 4000 3000 4000 6000
 
 let ParallelCatchupCoreResourceRequirements : V1ResourceRequirements =
     // When doing parallel catchup, we give each container
