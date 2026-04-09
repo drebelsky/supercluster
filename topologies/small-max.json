@@ -1,0 +1,26 @@
+[
+  {
+    "publicKey": 0,
+    "peers": [
+      1,
+      2
+    ],
+    "sb_homeDomain": "sdf"
+  },
+  {
+    "publicKey": 1,
+    "peers": [
+      0,
+      2
+    ],
+    "sb_homeDomain": "lo"
+  },
+  {
+    "publicKey": 2,
+    "peers": [
+      0,
+      1
+    ],
+    "sb_homeDomain": "pn"
+  }
+]
