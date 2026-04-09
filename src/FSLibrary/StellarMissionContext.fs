@@ -132,4 +132,5 @@ type MissionContext =
       benchmarkInfrastructure: bool option
       benchmarkInfrastructureOnly: bool option
       benchmarkDurationSeconds: int option
-      enableTcpTuning: bool }
+      enableTcpTuning: bool
+      compressionLevel: int option }

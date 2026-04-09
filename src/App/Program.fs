@@ -131,7 +131,8 @@ type MissionOptions
         benchmarkInfrastructure: bool,
         benchmarkOnly: bool,
         benchmarkDurationSeconds: int,
-        enableTcpTuning: bool
+        enableTcpTuning: bool,
+        compressionLevel: int option
     ) =
 
     [<Option('k', "kubeconfig", HelpText = "Kubernetes config file", Required = false, Default = "~/.kube/config")>]
@@ -597,6 +598,11 @@ type MissionOptions
              Default = false)>]
     member self.EnableTcpTuning = enableTcpTuning
 
+    [<Option("compression-level",
+             HelpText = "Compression level for overlay zstd compressions (See COMPRESSION_LEVEL)",
+             Required = false)>]
+    member self.CompressionLevel = compressionLevel
+
 let splitLabel (lab: string) : (string * string option) =
     match lab.Split ':' |> Array.toList with
     | [ x ] -> x, None
@@ -740,7 +746,8 @@ let main argv =
                   benchmarkInfrastructure = Some false
                   benchmarkInfrastructureOnly = Some false
                   benchmarkDurationSeconds = Some 30
-                  enableTcpTuning = false }
+                  enableTcpTuning = false
+                  compressionLevel = None }
 
             let nCfg = MakeNetworkCfg ctx [] None
             use formation = kube.MakeEmptyFormation(nCfg)
@@ -908,7 +915,8 @@ let main argv =
                                benchmarkInfrastructure = Some mission.BenchmarkInfrastructure
                                benchmarkInfrastructureOnly = Some mission.BenchmarkOnly
                                benchmarkDurationSeconds = Some mission.BenchmarkDurationSeconds
-                               enableTcpTuning = mission.EnableTcpTuning }
+                               enableTcpTuning = mission.EnableTcpTuning
+                               compressionLevel = mission.CompressionLevel }
 
                          allMissions.[m] missionContext
 

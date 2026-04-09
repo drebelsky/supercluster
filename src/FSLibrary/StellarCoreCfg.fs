@@ -306,6 +306,10 @@ type StellarCoreCfg =
             t.Add("OUTBOUND_TX_QUEUE_BYTE_LIMIT", self.network.missionContext.outboundByteLimit.Value)
             |> ignore
 
+        if self.network.missionContext.compressionLevel.IsSome then
+            t.Add("COMPRESSION_LEVEL", self.network.missionContext.compressionLevel.Value)
+            |> ignore
+
         if self.emitMeta then
             t.Add("METADATA_OUTPUT_STREAM", CfgVal.metaStreamPath) |> ignore
 
