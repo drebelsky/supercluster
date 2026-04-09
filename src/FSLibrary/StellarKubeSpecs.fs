@@ -364,7 +364,7 @@ let WithProbes (container: V1Container) (probeTimeout: int) : V1Container =
         )
 
     // REVERTME: Temporarily disable startup probes
-    // container.StartupProbe <- startupProbe
+    container.StartupProbe <- startupProbe
 
     container
 
