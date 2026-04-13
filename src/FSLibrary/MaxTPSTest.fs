@@ -268,8 +268,8 @@ let maxTPSTest (context: MissionContext) (baseLoadGen: LoadGen) (setupCfg: LoadG
                         let loadGen =
                             { baseLoadGen with
                                   accounts = numAccounts
-                                  // Roughly 1 min of load
-                                  txs = middle * 60
+                                  // Roughly 15 min of load
+                                  txs = middle * 1000
                                   txrate = middle }
 
                         formation.RunMultiLoadgen loadGenNodes loadGen
