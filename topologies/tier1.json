@@ -23,7 +23,7 @@
       19,
       20
     ],
-    "sb_homeDomain": "bd"
+    "radar_homeDomain": "bd"
   },
   {
     "publicKey": 1,
@@ -49,7 +49,7 @@
       19,
       20
     ],
-    "sb_homeDomain": "bd"
+    "radar_homeDomain": "bd"
   },
   {
     "publicKey": 2,
@@ -75,7 +75,7 @@
       19,
       20
     ],
-    "sb_homeDomain": "bd"
+    "radar_homeDomain": "bd"
   },
   {
     "publicKey": 3,
@@ -101,7 +101,7 @@
       19,
       20
     ],
-    "sb_homeDomain": "cq"
+    "radar_homeDomain": "cq"
   },
   {
     "publicKey": 4,
@@ -127,7 +127,7 @@
       19,
       20
     ],
-    "sb_homeDomain": "cq"
+    "radar_homeDomain": "cq"
   },
   {
     "publicKey": 5,
@@ -153,7 +153,7 @@
       19,
       20
     ],
-    "sb_homeDomain": "cq"
+    "radar_homeDomain": "cq"
   },
   {
     "publicKey": 6,
@@ -179,7 +179,7 @@
       19,
       20
     ],
-    "sb_homeDomain": "kb"
+    "radar_homeDomain": "kb"
   },
   {
     "publicKey": 7,
@@ -205,7 +205,7 @@
       19,
       20
     ],
-    "sb_homeDomain": "kb"
+    "radar_homeDomain": "kb"
   },
   {
     "publicKey": 8,
@@ -231,7 +231,7 @@
       19,
       20
     ],
-    "sb_homeDomain": "kb"
+    "radar_homeDomain": "kb"
   },
   {
     "publicKey": 9,
@@ -257,7 +257,7 @@
       19,
       20
     ],
-    "sb_homeDomain": "lo"
+    "radar_homeDomain": "lo"
   },
   {
     "publicKey": 10,
@@ -283,7 +283,7 @@
       19,
       20
     ],
-    "sb_homeDomain": "lo"
+    "radar_homeDomain": "lo"
   },
   {
     "publicKey": 11,
@@ -309,7 +309,7 @@
       19,
       20
     ],
-    "sb_homeDomain": "lo"
+    "radar_homeDomain": "lo"
   },
   {
     "publicKey": 12,
@@ -335,7 +335,7 @@
       19,
       20
     ],
-    "sb_homeDomain": "sp"
+    "radar_homeDomain": "sp"
   },
   {
     "publicKey": 13,
@@ -361,7 +361,7 @@
       19,
       20
     ],
-    "sb_homeDomain": "sp"
+    "radar_homeDomain": "sp"
   },
   {
     "publicKey": 14,
@@ -387,7 +387,7 @@
       19,
       20
     ],
-    "sb_homeDomain": "sp"
+    "radar_homeDomain": "sp"
   },
   {
     "publicKey": 15,
@@ -413,7 +413,7 @@
       19,
       20
     ],
-    "sb_homeDomain": "sdf"
+    "radar_homeDomain": "sdf"
   },
   {
     "publicKey": 16,
@@ -439,7 +439,7 @@
       19,
       20
     ],
-    "sb_homeDomain": "sdf"
+    "radar_homeDomain": "sdf"
   },
   {
     "publicKey": 17,
@@ -465,7 +465,7 @@
       19,
       20
     ],
-    "sb_homeDomain": "sdf"
+    "radar_homeDomain": "sdf"
   },
   {
     "publicKey": 18,
@@ -491,7 +491,7 @@
       19,
       20
     ],
-    "sb_homeDomain": "wx"
+    "radar_homeDomain": "wx"
   },
   {
     "publicKey": 19,
@@ -517,7 +517,7 @@
       18,
       20
     ],
-    "sb_homeDomain": "wx"
+    "radar_homeDomain": "wx"
   },
   {
     "publicKey": 20,
@@ -543,6 +543,6 @@
       18,
       19
     ],
-    "sb_homeDomain": "wx"
+    "radar_homeDomain": "wx"
   }
 ]
