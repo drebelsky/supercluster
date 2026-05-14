@@ -79,6 +79,7 @@ let ctx : MissionContext =
       enableInMemoryBuckets = false
       peerFloodCapacityBytes = None
       outboundByteLimit = None
+      compactForceRequestTxsPct = None
       sleepMainThread = None
       flowControlSendMoreBatchSize = None
       flowControlSendMoreBatchSizeBytes = None

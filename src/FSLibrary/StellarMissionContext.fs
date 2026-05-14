@@ -97,6 +97,7 @@ type MissionContext =
       flowControlSendMoreBatchSize: int option
       flowControlSendMoreBatchSizeBytes: int option
       outboundByteLimit: int option
+      compactForceRequestTxsPct: int option
       tier1OrgsToAdd: int
       nonTier1NodesToAdd: int
       randomSeed: int

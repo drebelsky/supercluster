@@ -314,6 +314,13 @@ type StellarCoreCfg =
             t.Add("OUTBOUND_TX_QUEUE_BYTE_LIMIT", self.network.missionContext.outboundByteLimit.Value)
             |> ignore
 
+        if self.network.missionContext.compactForceRequestTxsPct.IsSome then
+            t.Add(
+                "COMPACT_FORCE_REQUEST_TXS_PCT",
+                self.network.missionContext.compactForceRequestTxsPct.Value
+            )
+            |> ignore
+
         if self.emitMeta then
             t.Add("METADATA_OUTPUT_STREAM", CfgVal.metaStreamPath) |> ignore
 

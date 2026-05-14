@@ -102,6 +102,7 @@ type MissionOptions
         flowControlSendMoreBatchSize: int option,
         flowControlSendMoreBatchSizeBytes: int option,
         outboundByteLimit: int option,
+        compactForceRequestTxsPct: int option,
         simulateApplyDuration: seq<string>,
         simulateApplyWeight: seq<string>,
         networkSizeLimit: int,
@@ -450,6 +451,9 @@ type MissionOptions
     [<Option("outbound-byte-limit", HelpText = "Byte limit for outbound transaction queue", Required = false)>]
     member self.OutboundByteLimit = outboundByteLimit
 
+    [<Option("compact-force-request-txs-pct", HelpText = "Percentage of transactions to force always request from the peer", Required = false)>]
+    member self.CompactForceRequestTxsPct = compactForceRequestTxsPct
+
     [<Option("simulate-apply-duration",
              HelpText = "A space-separated list of how much to sleep for in simulation (See OP_APPLY_SLEEP_TIME_DURATION_FOR_TESTING)",
              Required = false)>]
@@ -741,6 +745,7 @@ let main argv =
                   enableInMemoryBuckets = false
                   peerFloodCapacityBytes = None
                   outboundByteLimit = None
+                  compactForceRequestTxsPct = None
                   sleepMainThread = None
                   flowControlSendMoreBatchSize = None
                   flowControlSendMoreBatchSizeBytes = None
@@ -912,6 +917,7 @@ let main argv =
                                peerFloodCapacity = mission.PeerFloodCapacity
                                peerFloodCapacityBytes = mission.PeerFloodCapacityBytes
                                outboundByteLimit = mission.OutboundByteLimit
+                               compactForceRequestTxsPct = mission.CompactForceRequestTxsPct
                                sleepMainThread = mission.SleepMainThread
                                flowControlSendMoreBatchSize = mission.FlowControlSendMoreBatchSize
                                flowControlSendMoreBatchSizeBytes = mission.FlowControlSendMoreBatchSizeBytes
